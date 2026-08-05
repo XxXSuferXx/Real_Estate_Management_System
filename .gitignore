@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables & secrets
+.env
+*.env
+*/.env
+
+# Build outputs
+dist/
+build/
+*/dist/
+*/build/
+
+# Operating System files
+.DS_Store
