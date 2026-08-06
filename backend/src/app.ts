@@ -1,11 +1,13 @@
 import express from "express";
 import type { Request, Response } from "express";
+import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRouter from "./routes/authRoutes.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/v1/',authRouter);
 
