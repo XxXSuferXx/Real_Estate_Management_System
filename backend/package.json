@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
     "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "redis:flush": "docker exec my-redis redis-cli FLUSHALL"
   },
   "keywords": [],
   "author": "",
