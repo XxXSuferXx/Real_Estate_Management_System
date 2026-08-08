@@ -50,7 +50,7 @@ export const register = async (req: Request, res: Response) => {
 
         const refreshToken = jwt.sign(
             payload,
-            process.env.ACCESS_TOKEN_SECRET as string,
+            process.env.REFRESH_TOKEN_SECRET as string,
             {
                 expiresIn: "7d"
             }
@@ -89,10 +89,10 @@ export const register = async (req: Request, res: Response) => {
 
 export const refreshTokenHandler = async (req: Request, res: Response) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies?.refreshToken;
 
         if(!refreshToken) {
-            return res.status(409).json({
+            return res.status(401).json({
                 success: false,
                 message: "Refresh Token missing. Please log in again"
             });
@@ -111,7 +111,7 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
                 
                 const newAccessToken = jwt.sign(
                     { id: decoded.id, role: decoded.role },
-                    process.env.ACCESS_TOKEN_SECRET || "access_secret",
+                    process.env.ACCESS_TOKEN_SECRET as string,
                     { expiresIn: "15m" }
                 );
 
@@ -143,16 +143,16 @@ export const login = async (req: Request, res: Response) => {
             });
         };
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select("+password");
 
         if(!user) {
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
                 message: "Invalid email or password"
             });
         }
 
-        const isPasswordValid = bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if(!isPasswordValid) {
             return res.status(401).json({
@@ -161,13 +161,48 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const token = jwt.sign({
+        const payload = { 
             id: user._id,
-            role: user.role
-        }, process.env.JWT_SECRET as string,
-        {
-            expiresIn: '1d'
+            role: user.role 
+        };
+
+        const accessToken = jwt.sign(
+            payload,
+            process.env.ACCESS_TOKEN_SECRET as string,
+            {
+                expiresIn: "15m"
+            }
+        )
+
+        const refreshToken = jwt.sign(
+            payload,
+            process.env.REFRESH_TOKEN_SECRET as string,
+            {
+                expiresIn: "7d"
+            }
+        )
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged in successfully!",
+            data: {
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                },
+                accessToken,
+            },
+        });
+
     } catch (error: any) {
         return res.status(500).json({
             success: false,
