@@ -84,17 +84,26 @@ const propertySchema = new Schema<IProperty>(
   { timestamps: true }
 );
 
+// =============================================================================
+// DATABASE INDEXES
+// =============================================================================
 
+// Prefecture Search & Sorting
 propertySchema.index({ status: 1, prefectureCode: 1, createdAt: -1, price: 1 });
 
+// City/Ward Search & Sorting
 propertySchema.index({ status: 1, cityCode: 1, createdAt: -1, price: 1 });
 
+// GeoSpatial
 propertySchema.index({ 'address.location': '2dsphere' });
 
+// English text search
 propertySchema.index({ 'title.en': 'text', 'description.en': 'text' });
 
+// Agent Dashboard
 propertySchema.index({ agent: 1, createdAt: -1 });
 
+// Category Filtering
 propertySchema.index({ type: 1, listingType: 1 });
 
 export const Property = model<IProperty>('Property', propertySchema);
