@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/v1/',authRouter);
-app.use('api/v1/properties',propRouter)
+app.use('api/v1/properties/',propRouter)
 
 app.get("/health", (req: Request, res: Response)=> {
 

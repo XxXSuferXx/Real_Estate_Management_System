@@ -6,4 +6,8 @@ export const redisClient = createClient({
 
 redisClient.on('error', (err) => console.error('Redis client error', err));
 
-await redisClient.connect();
+export const connectRedis = async () => {
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
+  }
+};
