@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { searchPropertiesController } from "../controllers/propController.js";
 
 const propRouter = Router();
 
@@ -16,7 +17,7 @@ propRouter.get(
     "/search",
     searchRateLimiter,                      // Prevents search scraping & DB Load (Redis)
     validate(searchPropertySchema),         // Validates query params like price, filters & pagination (Zod)
-    //propertyController                      // Queries MongoDB using compound/text indexes
+    searchPropertiesController              // Queries MongoDB using compound/text indexes
 )
 
 /**
