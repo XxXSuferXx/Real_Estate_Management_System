@@ -3,6 +3,7 @@ import { searchRateLimiter, writeRateLimiter } from "../middlewares/authRateLimi
 import { validate } from "../middlewares/validate.js";
 import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const propRouter = Router();
 
@@ -15,7 +16,7 @@ propRouter.get(
     "/search",
     searchRateLimiter,                      // Prevents search scraping & DB Load (Redis)
     validate(searchPropertySchema),         // Validates query params like price, filters & pagination (Zod)
-    propertyController                      // Queries MongoDB using compound/text indexes
+    //propertyController                      // Queries MongoDB using compound/text indexes
 )
 
 /**
@@ -29,7 +30,7 @@ propRouter.post(
     authMiddleware,                         // Authenticate request by verifying JWT access token
     restrictTo('agent', 'admin'),           // Ensures only authorized personals can create listings
     validate(createPropertySchema),         // Validates body payload (Zod)
-    propertyController                      // Handles property creation
+    //propertyController                      // Handles property creation
 )
 
 export default propRouter;
