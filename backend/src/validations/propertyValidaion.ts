@@ -42,7 +42,7 @@ export const searchPropertySchema = z.object({
     type: z.enum(['apartment', 'house', 'villa', 'plot', 'commercial']).optional(),
     listingType: z.enum(['sale', 'rent']).optional(),
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().max(50).default(20), // hard cap prevents abuse
+    limit: z.coerce.number().int().positive().max(50).default(20),
   }),
 });
 

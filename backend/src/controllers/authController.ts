@@ -1,10 +1,11 @@
 import { type Request, type Response } from "express";
 import crypto from "crypto";
-import { User, UserRole } from "../Modals/userSchema.js";
+import { User } from "../Modals/userSchema.js";
 import { RefreshToken } from "../Modals/refreshTokenSchema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppError } from "../common/errors/appError.js";
+import { UserRole } from "../common/constants/roles.js";
 
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -24,7 +25,7 @@ export const register = async (req: Request, res: Response) => {
     username,
     email,
     password: hashedPassword,
-    role: role && Object.values(UserRole).includes(role) ? role : UserRole.USER,
+    role: role && Object.values(UserRole).includes(role) ? role : UserRole.BUYER,
   });
 
   const payload = { id: newUser._id, role: newUser.role };

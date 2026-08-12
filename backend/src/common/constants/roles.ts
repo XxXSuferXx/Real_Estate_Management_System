@@ -1,1 +1,6 @@
-export type Role = 'admin' | 'agent' | 'buyer' | 'seller';
+export enum UserRole {
+  ADMIN = 'admin',
+  AGENT = 'agent',
+  BUYER = 'buyer',
+  SELLER = 'seller',
+}

@@ -1,9 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-
-export enum UserRole {
-    USER = 'user',
-    ADMIN = 'admin'
-}
+import { UserRole } from "../common/constants/roles.js";
 
 export interface IUser extends Document {
     username: string;
@@ -39,10 +35,13 @@ const userSchema = new Schema<IUser> (
             required: [true, 'Password is required'],
             select: false, // Prevents returning the hashed password in queries by default
             },
-            role: {
+        role: {
             type: String,
-            enum: Object.values(UserRole),
-            default: UserRole.USER,
+            enum: {
+                values: Object.values(UserRole),
+                message: `{VALUE} is not a valid userRole`
+            },
+            default: UserRole.BUYER,
         },
     },
     {

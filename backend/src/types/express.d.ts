@@ -1,11 +1,11 @@
-import { UserRole } from "../models/User";
+import { Role } from "../common/constants/roles.ts";
 
 declare global {
     namespace Express {
         interface Request {
             user?: {
                 id: string;
-                role: UserRole | string;
+                role: UserRole;
             };
         }
     }
