@@ -4,7 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { searchPropertiesController } from "../controllers/propController.js";
+import { addProperty, searchPropertiesController } from "../controllers/propController.js";
 import { UserRole } from "../common/constants/roles.js";
 
 const propRouter = Router();
@@ -32,7 +32,7 @@ propRouter.post(
     authMiddleware,                                         // Authenticate request by verifying JWT access token
     restrictTo(UserRole.ADMIN, UserRole.AGENT),             // Ensures only authorized personals can create listings
     validate(createPropertySchema),                         // Validates body payload (Zod)
-    //propertyController                                    // Handles property creation
+    addProperty                                            // Handles property creation
 )
 
 export default propRouter;
