@@ -5,14 +5,16 @@ import mongoose from "mongoose";
 import { redisClient } from "./config/redis.js";
 import authRouter from "./routes/authRoutes.js";
 import propRouter from "./routes/propertyRoutes.js";
+import { AppError } from "./common/errors/appError.js";
+import { errorHandler } from "./middlewares/error.js";
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api/v1/',authRouter);
-app.use('/api/v1/properties/',propRouter)
+app.use('/api/v1',authRouter);
+app.use('/api/v1/properties',propRouter)
 
 app.get("/health", async (req: Request, res: Response)=> {
 
@@ -40,8 +42,10 @@ app.get("/health", async (req: Request, res: Response)=> {
     });
 });
 
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ message: 'Route not found' });
+app.use((req, res, next) => {
+  next(new AppError(`Route not found: ${req.originalUrl}`, 404));
 });
+
+app.use(errorHandler);
 
 export default app;
