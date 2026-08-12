@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { type UserRole } from '../Modals/userSchema.js';
+import { type UserRole } from '../common/constants/roles.js';
 import { AppError } from '../common/errors/appError.js';
 
 interface AccessTokenPayload extends jwt.JwtPayload {
