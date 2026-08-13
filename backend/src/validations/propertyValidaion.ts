@@ -11,23 +11,62 @@ export const createPropertySchema = z.object({
       en: z.string().optional(),
     }),
     price: z.number().positive('Price must be a positive number'),
-    type: z.enum(['apartment', 'house', 'villa', 'plot', 'commercial']),
+    type: z.enum(['apartment', 'house', 'villa', 'plot', 'commercial', 'mansion']),
     listingType: z.enum(['sale', 'rent']),
+    status: z.enum(['available', 'pending', 'sold', 'rented']),
+
+    layout: z.string().optional(),
+    bedrooms: z.number().int().nonnegative().optional(),
+    bathrooms: z.number().int().nonnegative().optional(),
+    areaSqm: z.number().positive('Area in square meters is required'),
+    yearBuilt: z
+      .number()
+      .int()
+      .min(1800, 'Invalid year')
+      .max(new Date().getFullYear(), 'Year built cannot be in the future')
+      .optional(),
+
     prefectureCode: z.string().length(2, 'Prefecture code must be 2 digits, e.g. "13"'),
     cityCode: z.string().optional(),
+
+
     address: z.object({
-      city: z.string().min(1),
+      postalCode: z
+        .string()
+        .regex(/^\d{3}-?\d{4}$/, 'Invalid Japanese postal code (must be 7 digits, e.g. 106-0032 or 1060032)'),
+      prefecture: z.string().min(1, 'Prefecture name is required'),
+      city: z.string().min(1, 'City name is required'),
       town: z.string().optional(),
+      block: z.string().optional(),
+      buildingName: z.string().optional(),
+      formattedAddress: z.string().min(1, 'Formatted address is required'),
       location: z
         .object({
+          type: z.literal('Point').default('Point'),
           coordinates: z.tuple([z.number(), z.number()]),
         })
         .optional(),
     }),
-    bedrooms: z.number().int().nonnegative().optional(),
-    bathrooms: z.number().int().nonnegative().optional(),
-    areaSqft: z.number().positive().optional(),
+
+    nearestStations: z
+      .array(
+        z.object({
+          lineName: z.string().optional(),
+          stationName: z.string().min(1, 'Station name is required'),
+          walkMinutes: z.number().int().nonnegative('Walk minutes must be 0 or greater'),
+        })
+      )
+      .optional(),
+
     amenities: z.array(z.string()).optional(),
+    images: z
+      .array(
+        z.object({
+          url: z.string().url('Invalid image URL'),
+          publicId: z.string().min(1, 'Image public ID is required'),
+        })
+      )
+      .optional()
   }),
 });
 
