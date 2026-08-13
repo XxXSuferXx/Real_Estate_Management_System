@@ -126,8 +126,11 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
   let decoded: { id: string; role: string };
   try {
     decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as typeof decoded;
-  } catch {
-    throw new AppError("Invalid or expired refresh token", 403);
+  } catch (error){
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new AppError('Refresh token expired', 401);
+    }
+    throw new AppError('Invalid refresh token', 401);
   }
 
   const storedToken = await RefreshToken.findOne({

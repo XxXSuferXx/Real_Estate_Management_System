@@ -10,6 +10,16 @@ export const errorHandler = (
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Something went wrong';
 
+  if (err.name === 'TokenExpiredError') {
+    statusCode = 401;
+    message = 'Access token expired';
+  }
+
+  if (err.name === 'JsonWebTokenError') {
+    statusCode = 401;
+    message = 'Invalid token';
+  }
+
   if (err.name === 'CastError') {
     statusCode = 400;
     message = `Invalid ${err.path}: ${err.value}`;
