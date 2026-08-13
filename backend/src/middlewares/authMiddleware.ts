@@ -5,7 +5,7 @@ import { AppError } from '../common/errors/appError.js';
 
 interface AccessTokenPayload extends jwt.JwtPayload {
   id: string;
-  role: UserRole | string;
+  role: UserRole;
 }
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
