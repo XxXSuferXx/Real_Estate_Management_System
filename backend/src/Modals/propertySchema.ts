@@ -13,16 +13,37 @@ export interface IProperty extends Document {
   type: 'apartment' | 'house' | 'villa' | 'plot' | 'commercial';
   listingType: 'sale' | 'rent';
   status: 'available' | 'pending' | 'sold' | 'rented';
+
+  // Property Layout
+  layout?: string;
   bedrooms?: number;
   bathrooms?: number;
-  areaSqft?: number;
+  areaSqm: number;
+  yearBuilt?: number;
+
+
   prefectureCode: string; 
   cityCode?: string;      
+
+
   address: {
+    postalCode: string;
+    prefecture: string;
     city: string;
     town?: string;
+    block?: string;
+    buildingName?: string;
+    formattedAddress: string;
     location?: { type: 'Point'; coordinates: [number, number] };
   };
+
+  nearestStations?: {
+    lineName?: string;
+    stationName: string;
+    walkMinutes: number;
+  }[];
+
+
   amenities: string[];
   images: { 
     url: string; 
@@ -51,27 +72,46 @@ const propertySchema = new Schema<IProperty>(
     type: {
       type: String,
       enum: ['apartment', 'house', 'villa', 'plot', 'commercial'],
-      required: true,
+      required: true
     },
     listingType: { type: String, enum: ['sale', 'rent'], required: true },
     status: {
       type: String,
       enum: ['available', 'pending', 'sold', 'rented'],
-      default: 'available',
+      default: 'available'
     },
+    
+    layout: { type: String, trim: true },
     bedrooms: Number,
     bathrooms: Number,
-    areaSqft: Number,
+    areaSqm: { type: Number, required: true },
+    yearBuilt: Number,
+
     prefectureCode: { type: String, required: true },
-    cityCode: String,
+    cityCode: { type: String, index: true },
+    
     address: {
+      postalCode: { type: String, trim: true, required: true },
+      prefecture: { type: String, required: true },
       city: { type: String, required: true },
       town: String,
+      block: String,
+      buildingName: String,
+      formattedAddress: { type: String, required: true },
       location: {
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number], default: undefined },
       },
     },
+
+    nearestStations: [
+      {
+        lineName: String,
+        stationName: { type: String, required: true },
+        walkMinutes: { type: Number, required: true },
+      },
+    ],
+
     amenities: [String],
     images: [{ url: String, publicId: String }],
     agent: { type: Schema.Types.ObjectId, ref: 'User', required: true },
