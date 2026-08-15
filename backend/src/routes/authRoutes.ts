@@ -5,10 +5,10 @@ import { authRateLimiter } from '../middlewares/authRateLimiter.js';
 import { validate } from '../middlewares/validate.js';
 
 // Validation Schemas
-import { registerSchema, loginSchema } from '../validations/authValidation.js';
+import { registerSchema, loginSchema, resetPasswordSchema } from '../validations/authValidation.js';
 
 // Controllers
-import { register, logout, login, refreshTokenHandler } from '../controllers/authController.js';
+import { register, logout, login, refreshTokenHandler, resetPassword, forgotPassword } from '../controllers/authController.js';
 
 const authRouter = Router();
 
@@ -55,6 +55,29 @@ authRouter.post(
 authRouter.get(
     "/auth/logout",
     logout                        // Revokes active refresh token in Redis & clears HTTP-only auth cookies
+);
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    To be able to access the account after forgetting password
+ * @access  Public
+ */
+authRouter.post(
+    '/forgot-password',
+    authRateLimiter,
+    forgotPassword
+);
+
+/**
+ * @route   POST /api/v1/auth/reset-password
+ * @desc    Reset Password
+ * @access  Public
+ */
+authRouter.post(
+    '/reset-password',
+    authRateLimiter,
+    validate(resetPasswordSchema),
+    resetPassword
 );
 
 export default authRouter;

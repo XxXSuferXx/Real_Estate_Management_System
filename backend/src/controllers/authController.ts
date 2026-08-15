@@ -6,11 +6,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppError } from "../common/errors/appError.js";
 import { UserRole } from "../common/constants/roles.js";
+import type { LoginInput, RegisterInput, ResetPasswordInput } from "../validations/authValidation.js";
 
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
   const { username, email, password, role } = req.body;
 
   const existingUser = await User.findOne({ email });
@@ -66,7 +67,7 @@ export const register = async (req: Request, res: Response) => {
   });
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select("+password");
@@ -173,3 +174,11 @@ export const logout = async (req: Request, res: Response) => {
     message: "Logged out successfully",
   });
 };
+
+export const forgotPassword = async(req: Request, res: Response) => {
+  
+}
+
+export const resetPassword = async (req: Request<{}, {}, ResetPasswordInput>, res: Response) => {
+
+}

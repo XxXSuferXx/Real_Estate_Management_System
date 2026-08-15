@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { checkPasswordStrength } from '../common/utils/passwordStrength.js';
+import { UserRole } from '../common/constants/roles.js';
 
 // ==========================================
 // 1. REGISTER SCHEMA
@@ -14,7 +15,7 @@ export const registerSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
         .regex(/[0-9]/, 'Password must contain at least one number'),
-      role: z.enum(['buyer', 'seller', 'agent']).default('buyer'),
+      role: z.enum(UserRole).default(UserRole.BUYER),
     })
 
     .check((ctx) => {
@@ -57,3 +58,41 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>['body'];
+
+// ==========================================
+// 3. RESET PASSWORD SCHEMA
+// ==========================================
+export const resetPasswordSchema = z.object({
+  body: z.
+    object({
+      token: z
+        .string()
+        .trim()
+        .min(1, 'Token is required'),
+      newPassword: z
+        .string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number'),
+    })
+    .check((ctx) => {
+      const { isStrongEnough, score, warning, suggestions } = checkPasswordStrength(
+        ctx.value.newPassword
+      );
+
+      if (!isStrongEnough) {
+        ctx.issues.push({
+          code: 'custom',
+          path: ['newPassword'],
+          input: ctx.value.newPassword,
+          message:
+            warning ||
+            `Password is too weak (score ${score}/4).${
+              suggestions.length ? ' ' + suggestions.join(' ') : ''
+            }`,
+        });
+      }
+    }),
+});
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>['body'];
