@@ -4,7 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { addProperty, searchPropertiesController } from "../controllers/propController.js";
+import { addProperty, deleteProperty, searchPropertiesController } from "../controllers/propController.js";
 import { UserRole } from "../common/constants/roles.js";
 
 const propRouter = Router();
@@ -22,8 +22,8 @@ propRouter.get(
 )
 
 /**
- * @route   POST api/v1/properties
- * @desc    Creates a new property listing with multilingual details and GeoJSON coordinates
+ * @route   POST api/v1/properties/
+ * @desc    Creates a new property listing
  * @access  Private (Agent, Admin)
  */
 propRouter.post(
@@ -33,6 +33,19 @@ propRouter.post(
     restrictTo(UserRole.ADMIN, UserRole.AGENT),             // Ensures only authorized personals can create listings
     validate(createPropertySchema),                         // Validates body payload (Zod)
     addProperty                                            // Handles property creation
+)
+
+/**
+ * @route   POST api/v1/properties/:id
+ * @desc    Deletes any property
+ * @access  Private (Agent, Admin)
+ */
+propRouter.delete(
+    "/:id",
+    writeRateLimiter,
+    authMiddleware,
+    restrictTo(UserRole.AGENT, UserRole.ADMIN),
+    deleteProperty
 )
 
 export default propRouter;
