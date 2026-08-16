@@ -86,3 +86,9 @@ export const searchPropertySchema = z.object({
 });
 
 export type SearchPropertyInput = z.infer<typeof searchPropertySchema>['query'];
+
+export const updatePropertySchema = z.object({
+  body: createPropertySchema.shape.body.partial(),
+});
+
+export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>["body"];

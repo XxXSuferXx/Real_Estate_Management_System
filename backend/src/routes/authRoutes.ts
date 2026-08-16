@@ -52,7 +52,7 @@ authRouter.post(
  * @desc    Invalidate user session & clear authentication cookies
  * @access  Private / Authenticated
  */
-authRouter.get(
+authRouter.post(
     "/auth/logout",
     logout                        // Revokes active refresh token in Redis & clears HTTP-only auth cookies
 );
@@ -63,7 +63,7 @@ authRouter.get(
  * @access  Public
  */
 authRouter.post(
-    '/forgot-password',
+    '/auth/forgot-password',
     authRateLimiter,
     forgotPassword
 );
@@ -74,7 +74,7 @@ authRouter.post(
  * @access  Public
  */
 authRouter.post(
-    '/reset-password',
+    '/auth/reset-password',
     authRateLimiter,
     validate(resetPasswordSchema),
     resetPassword

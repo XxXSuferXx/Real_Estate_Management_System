@@ -4,7 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { addProperty, deleteProperty, searchPropertiesController } from "../controllers/propController.js";
+import { getPropertyById, addProperty, deleteProperty, searchPropertiesController } from "../controllers/propController.js";
 import { UserRole } from "../common/constants/roles.js";
 
 const propRouter = Router();
@@ -34,6 +34,8 @@ propRouter.post(
     validate(createPropertySchema),                         // Validates body payload (Zod)
     addProperty                                            // Handles property creation
 )
+
+propRouter.get("/:id", searchRateLimiter, getPropertyById);
 
 /**
  * @route   POST api/v1/properties/:id

@@ -57,3 +57,47 @@ export const deleteProperty = async (req: Request, res: Response) => {
     message: "Property deleted successfully",
   });
 }
+
+export const getPropertyById = async (req: Request, res: Response) => {
+  const property = await Property.findById(req.params.id).populate(
+    "agent",
+    "username email"
+  );
+ 
+  if(!property){
+    throw new AppError("Property not found", 404);
+  }
+ 
+  res.status(200).json({
+    success: true,
+    data: property,
+  });
+};
+
+export const updateProperty = async (req: Request, res: Response) => {
+  if(!req.user) {
+    throw new AppError("Unauthorized", 401);
+  }
+
+  const property = await Property.findById(req.params.id);
+
+  if(!property) {
+    throw new AppError("Property not found", 404);
+  }
+
+  const isOwner = property.agent.equals(req.user.id);
+  const isAdmin = req.user.role === UserRole.ADMIN;
+
+  if(!isOwner && !isAdmin) {
+    throw new AppError("You can only edit your own listing",403);
+  }
+
+  Object.assign(property, req.validated!.body);
+  await property.save();
+ 
+  res.status(200).json({
+    success: true,
+    message: "Property updated successfully",
+    data: property,
+  });
+}
