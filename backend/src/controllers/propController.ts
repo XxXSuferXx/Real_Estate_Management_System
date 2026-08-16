@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { AppError } from "../common/errors/appError.js";
 import { Property } from "../Modals/propertySchema.js";
 import { UserRole } from "../common/constants/roles.js";
+import { translationQueue } from "../jobs/translationQueue.js";
 
 export const searchPropertiesController = async (req: Request, res: Response) => {
   return res.status(200).json({
@@ -24,6 +25,10 @@ export const addProperty = async (req:Request, res:Response) => {
     ...req.body,
     agent: req.user.id
   });
+
+  if(!property.title.en || !property.description.en) {
+    await translationQueue.add("translate-property", {propertyId: property.id});
+  }
 
   res.status(201).json({
     success: true,
@@ -94,6 +99,14 @@ export const updateProperty = async (req: Request, res: Response) => {
 
   Object.assign(property, req.validated!.body);
   await property.save();
+
+  const touchedJapanese = "title" in req.validated!.body || "description" in req.validated!.body;
+  const humanTranslation = property.translationStatus.title === "human" &&
+                           property.translationStatus.description === "human";
+
+  if(touchedJapanese && !humanTranslation) {
+    await translationQueue.add("translation-property", {propertyId: property.id})
+  }
  
   res.status(200).json({
     success: true,
