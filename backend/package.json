@@ -29,6 +29,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "@google/genai": "^2.17.1",
     "@types/mongoose": "^5.11.96",
     "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^4.1.3",
