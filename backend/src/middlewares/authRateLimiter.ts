@@ -16,7 +16,7 @@ const buildLimiter = (windowMs: number, max: number, message: string) =>
     }),
     handler: (req, res, next) => {
       next(new AppError(message, 429));
-    },
+    }
   });
 
 // Rate limits auth routes (Login, Register, Refresh)

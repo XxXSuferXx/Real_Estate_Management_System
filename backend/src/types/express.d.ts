@@ -1,3 +1,4 @@
+import type { Locale } from "../common/constants/locale.ts";
 import { Role } from "../common/constants/roles.ts";
 
 declare global {
@@ -8,6 +9,7 @@ declare global {
                 role: UserRole;
             };
             validated?: { body?: any; query?: any; params?: any };
+            locale: Locale;
         }
     }
 }

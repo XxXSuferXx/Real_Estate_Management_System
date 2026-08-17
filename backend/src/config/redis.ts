@@ -12,3 +12,5 @@ export const connectRedis = async () => {
     console.log('Connected to Redis');
   }
 };
+
+await connectRedis();
