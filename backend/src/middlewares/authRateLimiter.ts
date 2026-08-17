@@ -10,7 +10,8 @@ const buildLimiter = (windowMs: number, max: number, message: string) =>
     standardHeaders: true,
     legacyHeaders: false,
     store: new RedisStore({
-      sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+      sendCommand: (...args: string[]) => 
+        redisClient.sendCommand(args),
       prefix: 'rl:',
     }),
     handler: (req, res, next) => {

@@ -12,6 +12,7 @@ const hashToken = (token: string) => crypto.createHash("sha256").update(token).d
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
+  console.log("working1");
   const { username, email, password, role } = req.body;
 
   const existingUser = await User.findOne({ email });
@@ -37,7 +38,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
   const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, {
     expiresIn: "7d",
   });
-
+  console.log("working2");
   await RefreshToken.create({
     user: newUser._id,
     tokenHash: hashToken(refreshToken),
@@ -50,7 +51,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
     sameSite: "lax",
     maxAge: REFRESH_TOKEN_TTL_MS,
   });
-
+  console.log("working3");
   res.status(201).json({
     success: true,
     message: "User registered successfully!",
