@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
+    "seed": "tsx src/scripts/seedAdmin.ts --seed",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "redis:flush": "docker exec my-redis redis-cli FLUSHALL"
