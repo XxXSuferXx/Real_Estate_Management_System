@@ -92,3 +92,11 @@ export const updatePropertySchema = z.object({
 });
 
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>["body"];
+
+export const deleteImageSchema = z.object({
+    query: z.object({
+    publicId: z.string().min(1, "publicId is required")
+  })
+});
+
+export type DeleteImageInput = z.infer<typeof deleteImageSchema>["query"];

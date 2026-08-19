@@ -5,7 +5,9 @@ import { AppError } from '../common/errors/appError.js';
 export const validate =
   (schema: z.ZodType) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({ body: req.body, query: req.query, params: req.params });
+      // Change as any to better approach
+      req.validated = schema.parse({ body: req.body, query: req.query, params: req.params }) as any;
+      
       next();
     } catch (err) {
       if (err instanceof ZodError) {

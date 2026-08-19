@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { searchRateLimiter, writeRateLimiter } from "../middlewares/authRateLimiter.js";
 import { validate } from "../middlewares/validate.js";
-import { createPropertySchema, searchPropertySchema } from "../validations/propertyValidaion.js";
+import { createPropertySchema, deleteImageSchema, searchPropertySchema, updatePropertySchema } from "../validations/propertyValidaion.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { getPropertyById, addProperty, deleteProperty, searchPropertiesController } from "../controllers/propController.js";
+import { getPropertyById, addProperty, deleteProperty, searchPropertiesController, updateProperty, uploadPropertyImages, deletePropertyImage } from "../controllers/propController.js";
 import { UserRole } from "../common/constants/roles.js";
+import { upload } from "../middlewares/upload.js";
 
 const propRouter = Router();
 
@@ -48,6 +49,48 @@ propRouter.delete(
     authMiddleware,
     restrictTo(UserRole.AGENT, UserRole.ADMIN),
     deleteProperty
+)
+
+/**
+ * @route   PATCH api/v1/properties/:id
+ * @desc    Edit any property
+ * @access  Private(Agent, Admin)
+ */
+propRouter.patch(
+  "/:id",
+  writeRateLimiter,
+  authMiddleware,
+  restrictTo(UserRole.AGENT, UserRole.ADMIN),
+  validate(updatePropertySchema),
+  updateProperty
+);
+
+/**
+ * @route   POST api/v1/properties/:id/images
+ * @desc    upload property Images
+ * @access  Private(Agent, Admin)
+ */
+propRouter.post(
+    "/:id/images",
+    writeRateLimiter,
+    authMiddleware,
+    restrictTo(UserRole.ADMIN, UserRole.AGENT),
+    upload.array("images", 10),
+    uploadPropertyImages
+)
+
+/**
+ * @route   DELETE api/v1/properties/id/:images
+ * @desc    delete property Images
+ * @access  Private(Agent, Admin)
+ */
+propRouter.delete(
+    "/:id/images",
+    writeRateLimiter,
+    authMiddleware,
+    restrictTo(UserRole.ADMIN, UserRole.AGENT),
+    validate(deleteImageSchema),
+    deletePropertyImage
 )
 
 export default propRouter;

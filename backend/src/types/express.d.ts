@@ -8,7 +8,7 @@ declare global {
                 id: string;
                 role: UserRole;
             };
-            validated?: { body?: any; query?: any; params?: any };
+            validated?: { body?: unknow; query?: unknown; params?: unknown };
             locale: Locale;
         }
     }
