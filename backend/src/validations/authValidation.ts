@@ -36,7 +36,7 @@ export const registerSchema = z.object({
             }`,
         });
       }
-    }),
+    })
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>['body'];
@@ -96,3 +96,46 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>['body'];
+
+// ==========================================
+// 3. FORGOT PASSWORD SCHEMA
+// ==========================================
+export const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().trim().lowercase().email('Invalid email address')
+  })
+})
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>['body'];
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string("current password is required").min(1,"Current Password is required."),
+    newPassword: z
+        .string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number'),
+
+    })
+    .check((ctx) => {
+      const { isStrongEnough, score, warning, suggestions } = checkPasswordStrength(
+        ctx.value.newPassword
+      );
+
+      if (!isStrongEnough) {
+        ctx.issues.push({
+          code: 'custom',
+          path: ['newPassword'],
+          input: ctx.value.newPassword,
+          message:
+            warning ||
+            `Password is too weak (score ${score}/4).${
+              suggestions.length ? ' ' + suggestions.join(' ') : ''
+            }`,
+        });
+      }
+    })
+})
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>["body"];

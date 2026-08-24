@@ -22,20 +22,20 @@ const buildLimiter = (windowMs: number, max: number, message: string) =>
 // Rate limits auth routes (Login, Register, Refresh)
 export const authRateLimiter = buildLimiter(
   15 * 60 * 1000, 
-  10,
+  100,
   'Too many attempts. Please try again in 15 minutes.'
 );
 
 // Rate limits property routes (create/update property, upload images)
 export const writeRateLimiter = buildLimiter(
   60 * 1000,
-  20,
+  200,
   'Too many requests. Please try again after waiting some time.'
 );
 
 // Rate limits propert search end points
 export const searchRateLimiter = buildLimiter(
   60 * 1000,
-  30,
+  300,
   'Too many requests. Please try again after some time.'
 );

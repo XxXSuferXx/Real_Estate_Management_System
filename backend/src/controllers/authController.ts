@@ -7,12 +7,15 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../common/errors/appError.js";
 import { UserRole } from "../common/constants/roles.js";
 import type { LoginInput, RegisterInput, ResetPasswordInput } from "../validations/authValidation.js";
+import { redisClient } from "../config/redis.js";
+import { Resend } from "resend";
 
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const RESET_PASSWORD_TTL_SECONDS = 15 * 60
 
 export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
-  console.log("working1");
+  
   const { username, email, password, role } = req.body;
 
   const existingUser = await User.findOne({ email });
@@ -38,7 +41,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
   const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, {
     expiresIn: "7d",
   });
-  console.log("working2");
+  
   await RefreshToken.create({
     user: newUser._id,
     tokenHash: hashToken(refreshToken),
@@ -51,7 +54,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
     sameSite: "lax",
     maxAge: REFRESH_TOKEN_TTL_MS,
   });
-  console.log("working3");
+ 
   res.status(201).json({
     success: true,
     message: "User registered successfully!",
@@ -177,9 +180,123 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const forgotPassword = async(req: Request, res: Response) => {
-  
+  const {email} = req.body;
+
+  if(!email) {
+    throw new AppError("Email is required", 400);
+  }
+
+  const user = await User.findOne({email});
+
+  if(!user) {
+    return res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent."
+    })
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = hashToken(resetToken);
+  const redisKey = `password_reset:${hashedToken}`;
+
+  await redisClient.setEx(redisKey, RESET_PASSWORD_TTL_SECONDS, user._id.toString());
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const from = process.env.EMAIL_FROM || "Acme <onboarding@resend.dev>";
+
+  const {error} = await resend.emails.send({
+    from,
+    to: [email],  
+    subject: "Reset Your Password",
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password. Click the link below to set a new password. This link will expire in 15 minutes.</p>
+        <a href="${resetUrl}" style="background-color: #2563eb; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 16px 0;">
+          Reset Password
+        </a>
+        <p style="color: #6b7280; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    throw new AppError("Failed to send Password reset email.", 500);
+  }
+
+  res.status(200).json({
+    success: "true"
+  });
 }
 
 export const resetPassword = async (req: Request<{}, {}, ResetPasswordInput>, res: Response) => {
+  const {token, newPassword} = req.body;
 
+  if(!token || !newPassword) {
+    throw new AppError("Token and Password are required",400);
+  }
+
+  const hashedToken = hashToken(token);
+  const redisKey = `password_reset:${hashedToken}`;
+
+  const userId = await redisClient.get(redisKey);
+
+  if (!userId) {
+    throw new AppError("Invalid or expired password reset token", 400);
+  }
+
+  const user = await User.findById(userId);
+  if(!user) {
+    throw new AppError("User no longer exists", 404);
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  await user.save();
+  await RefreshToken.deleteMany({ user: userId });
+
+ 
+  await redisClient.del(redisKey);
+
+  return res.status(200).json({
+    success: true,
+    message: "Password reset successful",
+  });
+}
+
+export const changePassword = async (req:Request, res: Response) => {
+  const {currentPassword, newPassword} = req.body;
+
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new AppError("Unauthorized. Please log in", 401);
+  }
+
+  if(!currentPassword || !newPassword) {
+    throw new AppError("current Password and new Password are required",400);
+  }
+
+  const user = await User.findById(userId).select("+password");
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  if(!isPasswordValid) {
+    throw new AppError("Incorrect password",400);
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  await user.save();
+
+  await RefreshToken.deleteMany({user: userId});
+
+  return res.status(200).json({
+    success: true,
+    message: "Password changed successfully. Please log in again."
+  })
 }
