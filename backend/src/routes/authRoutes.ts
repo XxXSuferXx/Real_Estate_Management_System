@@ -82,6 +82,11 @@ authRouter.post(
     resetPassword
 );
 
+/**
+ * @route   POST /api/v1/auth/change-password
+ * @desc    Change Password when password is previously known
+ * @access  Public
+ */
 authRouter.post(
     '/auth/change-password',
     authRateLimiter,
