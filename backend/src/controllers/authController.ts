@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppError } from "../common/errors/appError.js";
 import { UserRole } from "../common/constants/roles.js";
-import type { LoginInput, RegisterInput, ResetPasswordInput } from "../validations/authValidation.js";
+import type { ChangePasswordInput, ForgotPasswordInput, LoginInput, RegisterInput, ResetPasswordInput } from "../validations/authValidation.js";
 import { redisClient } from "../config/redis.js";
 import { Resend } from "resend";
 
@@ -179,7 +179,7 @@ export const logout = async (req: Request, res: Response) => {
   });
 };
 
-export const forgotPassword = async(req: Request, res: Response) => {
+export const forgotPassword = async(req: Request<{},{},ForgotPasswordInput>, res: Response) => {
   const {email} = req.body;
 
   if(!email) {
@@ -223,11 +223,12 @@ export const forgotPassword = async(req: Request, res: Response) => {
   });
 
   if (error) {
-    throw new AppError("Failed to send Password reset email.", 500);
+    console.error("Failed to send Password reset email.", error);
   }
 
   res.status(200).json({
-    success: "true"
+    success: "true",
+    message: "Password reset link has been sent."
   });
 }
 
@@ -241,7 +242,7 @@ export const resetPassword = async (req: Request<{}, {}, ResetPasswordInput>, re
   const hashedToken = hashToken(token);
   const redisKey = `password_reset:${hashedToken}`;
 
-  const userId = await redisClient.get(redisKey);
+  const userId = await redisClient.getDel(redisKey);
 
   if (!userId) {
     throw new AppError("Invalid or expired password reset token", 400);
@@ -255,10 +256,9 @@ export const resetPassword = async (req: Request<{}, {}, ResetPasswordInput>, re
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   await user.save();
-  await RefreshToken.deleteMany({ user: userId });
 
- 
-  await redisClient.del(redisKey);
+
+  await RefreshToken.deleteMany({ user: userId });
 
   return res.status(200).json({
     success: true,
@@ -266,17 +266,13 @@ export const resetPassword = async (req: Request<{}, {}, ResetPasswordInput>, re
   });
 }
 
-export const changePassword = async (req:Request, res: Response) => {
+export const changePassword = async (req:Request<{}, {}, ChangePasswordInput>, res: Response) => {
   const {currentPassword, newPassword} = req.body;
 
   const userId = req.user?.id;
 
   if (!userId) {
     throw new AppError("Unauthorized. Please log in", 401);
-  }
-
-  if(!currentPassword || !newPassword) {
-    throw new AppError("current Password and new Password are required",400);
   }
 
   const user = await User.findById(userId).select("+password");

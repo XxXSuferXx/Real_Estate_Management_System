@@ -5,10 +5,11 @@ import { authRateLimiter } from '../middlewares/authRateLimiter.js';
 import { validate } from '../middlewares/validate.js';
 
 // Validation Schemas
-import { registerSchema, loginSchema, resetPasswordSchema, changePasswordSchema } from '../validations/authValidation.js';
+import { registerSchema, loginSchema, resetPasswordSchema, changePasswordSchema, forgotPasswordSchema } from '../validations/authValidation.js';
 
 // Controllers
 import { register, logout, login, refreshTokenHandler, resetPassword, forgotPassword, changePassword } from '../controllers/authController.js';
+import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const authRouter = Router();
 
@@ -65,6 +66,7 @@ authRouter.post(
 authRouter.post(
     '/auth/forgot-password',
     authRateLimiter,
+    validate(forgotPasswordSchema),
     forgotPassword
 );
 
@@ -83,6 +85,7 @@ authRouter.post(
 authRouter.post(
     '/auth/change-password',
     authRateLimiter,
+    authMiddleware,
     validate(changePasswordSchema),
     changePassword
 )

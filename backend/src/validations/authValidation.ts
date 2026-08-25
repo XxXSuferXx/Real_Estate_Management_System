@@ -108,6 +108,9 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>['body'];
 
+// ==========================================
+// 3. CHANGE PASSWORD SCHEMA
+// ==========================================
 export const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string("current password is required").min(1,"Current Password is required."),
