@@ -67,7 +67,7 @@ export const createPropertySchema = z.object({
         })
       )
       .optional()
-  }),
+  }).strict()
 });
 
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>['body'];
@@ -82,7 +82,7 @@ export const searchPropertySchema = z.object({
     listingType: z.enum(['sale', 'rent']).optional(),
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(50).default(20),
-  }),
+  })
 });
 
 export type SearchPropertyInput = z.infer<typeof searchPropertySchema>['query'];
