@@ -22,7 +22,7 @@ const buildLimiter = (windowMs: number, max: number, message: string) =>
 // Rate limits auth routes (Login, Register, Refresh)
 export const authRateLimiter = buildLimiter(
   15 * 60 * 1000, 
-  100,
+  2000,
   'Too many attempts. Please try again in 15 minutes.'
 );
 

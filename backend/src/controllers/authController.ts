@@ -17,21 +17,24 @@ const RESET_PASSWORD_TTL_SECONDS = 15 * 60
 export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
   
   const { username, email, password, role } = req.body;
-
+  const t0 = performance.now();
   const existingUser = await User.findOne({ email });
+  const t1 = performance.now();
   if (existingUser) {
     throw new AppError("User Already Exists", 409);
   }
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-
+   const t2 = performance.now();
   const newUser = await User.create({
     username,
     email,
     password: hashedPassword,
     role: role && Object.values(UserRole).includes(role) ? role : UserRole.BUYER,
   });
+
+  const t3 = performance.now();
 
   const payload = { id: newUser._id, role: newUser.role };
 
@@ -41,12 +44,17 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
   const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, {
     expiresIn: "7d",
   });
+
+  const t4 = performance.now();
   
   await RefreshToken.create({
     user: newUser._id,
     tokenHash: hashToken(refreshToken),
     expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
   });
+  const t5 = performance.now();
+
+  console.log(`findOne: ${(t1-t0).toFixed(1)}ms | bcrypt: ${(t2-t1).toFixed(1)}ms | create user: ${(t3-t2).toFixed(1)}ms | jwt: ${(t4-t3).toFixed(1)}ms | create token: ${(t5-t4).toFixed(1)}ms | total: ${(t5-t0).toFixed(1)}ms`);
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,

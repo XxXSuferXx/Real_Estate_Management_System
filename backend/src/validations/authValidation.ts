@@ -18,7 +18,7 @@ export const registerSchema = z.object({
       role: z.enum(UserRole).default(UserRole.BUYER),
     })
 
-    .check((ctx) => {
+    /*.check((ctx) => {
       const { isStrongEnough, score, warning, suggestions } = checkPasswordStrength(
         ctx.value.password,
         [ctx.value.username, ctx.value.email]
@@ -36,7 +36,7 @@ export const registerSchema = z.object({
             }`,
         });
       }
-    })
+    })*/
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>['body'];
