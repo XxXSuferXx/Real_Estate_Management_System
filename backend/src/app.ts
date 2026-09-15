@@ -10,6 +10,7 @@ import { AppError } from "./common/errors/appError.js";
 import { errorHandler } from "./middlewares/error.js";
 import geoRouter from "./routes/geoRoutes.js";
 import { localeMiddleware } from "./middlewares/locale.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(localeMiddleware);
 app.use('/api/v1', authRouter);
 app.use('/api/v1/properties', propRouter)
 app.use('/api/v1/geo', geoRouter);
+app.use('/api/v1',adminRouter);
 
 app.get("/health", async (req: Request, res: Response)=> {
 
