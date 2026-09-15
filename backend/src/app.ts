@@ -17,11 +17,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use(localeMiddleware);
 
 app.use('/api/v1', authRouter);
 app.use('/api/v1/properties', propRouter)
 app.use('/api/v1/geo', geoRouter);
-app.use(localeMiddleware);
 
 app.get("/health", async (req: Request, res: Response)=> {
 

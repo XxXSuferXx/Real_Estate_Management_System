@@ -7,6 +7,9 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+   if (res.headersSent) {
+    return next(err);
+  }
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Something went wrong';
 
@@ -33,6 +36,10 @@ export const errorHandler = (
     message = Object.values(err.errors)
       .map((e: any) => e.message)
       .join(', ');
+  }
+  if (err.name === 'ZodError') {
+    statusCode = 400;
+    message = err.issues.map((e: any) => e.message).join(', ');
   }
 
   const isKnownError = err instanceof AppError || statusCode < 500;

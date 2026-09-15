@@ -8,7 +8,7 @@ import { UserRole } from '../common/constants/roles.js';
 export const registerSchema = z.object({
   body: z
     .object({
-      username: z.string().min(2, 'Name must be at least 2 characters').max(100),
+      username: z.string().min(3, 'Name must be at least 3 characters').max(30),
       email: z.string().trim().lowercase().email('Invalid email address'),
       password: z
         .string()
@@ -98,7 +98,7 @@ export const resetPasswordSchema = z.object({
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>['body'];
 
 // ==========================================
-// 3. FORGOT PASSWORD SCHEMA
+// 4. FORGOT PASSWORD SCHEMA
 // ==========================================
 export const forgotPasswordSchema = z.object({
   body: z.object({
@@ -109,7 +109,7 @@ export const forgotPasswordSchema = z.object({
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>['body'];
 
 // ==========================================
-// 3. CHANGE PASSWORD SCHEMA
+// 5. CHANGE PASSWORD SCHEMA
 // ==========================================
 export const changePasswordSchema = z.object({
   body: z.object({
@@ -142,3 +142,28 @@ export const changePasswordSchema = z.object({
 })
 
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>["body"];
+
+// ==========================================
+// 6. GET ALL USERS SCHEMA
+// ==========================================
+
+export const getAllUsersSchema = z.object({
+  query: z
+    .object({
+      page: z
+        .string()
+        .regex(/^\d+$/, 'page must be a positive integer')
+        .transform(Number)
+        .refine((n) => n >= 1, 'page must be at least 1')
+        .optional(),
+      limit: z
+        .string()
+        .regex(/^\d+$/, 'limit must be a positive integer')
+        .transform(Number)
+        .refine((n) => n >= 1 && n <= 100, 'limit must be between 1 and 100')
+        .optional(),
+      role: z.enum(UserRole).optional(),
+      search: z.string().trim().max(100).optional(),
+    })
+    .strict(), // reject unknown query params instead of silently ignoring them
+});

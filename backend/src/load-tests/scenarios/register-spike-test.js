@@ -1,24 +1,29 @@
 import http from 'k6/http';
 import { check } from 'k6';
+import exec from 'k6/execution';
 
 export const options = {
   scenarios: {
-    instant_post_burst: {
-      executor: 'per-vu-iterations',
-      vus: 100,
-      iterations: 1,
-      maxDuration: '1m',
+    fixed_rate_burst: {
+      executor: 'constant-arrival-rate',
+      rate: 50,
+      timeUnit: '1s',
+      duration: '4s',
+      preAllocatedVUs: 200, // Pre-allocate all 200 VUs at t=0
+      maxVUs: 250,          // Safety buffer
     },
   },
-  //noConnectionReuse: true,
 };
 
 export default function () {
   const url = 'http://localhost:3000/api/v1/auth/register';
 
+  // Combine VU id, test-wide iteration count, and random string to eliminate collisions
+  const uniqueId = `${__VU}_${exec.scenario.iterationInTest}_${Math.random().toString(36).substring(7)}`;
+
   const payload = JSON.stringify({
-    email: `buyer_${__VU}_${Date.now()}@example.com`,
-    username: `buyer_${__VU}`,
+    email: `buyer_${uniqueId}@example.com`,
+    username: `user_${uniqueId}`,
     password: '*$#Si8f5g',
     role: 'buyer',
   });
@@ -30,11 +35,10 @@ export default function () {
   const res = http.post(url, payload, params);
 
   const success = check(res, {
-    'status is 200 or 201': (r) => r.status === 200 || r.status === 201,
+    'status is 201': (r) => r.status === 201,
   });
 
-  // Log non-200 responses to diagnose server pool or CPU crashes
   if (!success) {
-    console.error(`VU ${__VU} failed with status ${res.status}: ${res.body}`);
+    console.error(`VU ${__VU} [Iter ${exec.scenario.iterationInTest}] failed (${res.status}): ${res.body}`);
   }
 }

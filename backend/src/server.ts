@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-process.env.UV_THREADPOOL_SIZE = '64';
+process.env.UV_THREADPOOL_SIZE = '12';
 
 import app from './app.js';
 import { connectDB } from "./config/db.js";

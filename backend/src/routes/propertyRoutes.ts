@@ -5,7 +5,7 @@ import { createPropertySchema, deleteImageSchema, searchPropertySchema, updatePr
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { getPropertyById, addProperty, deleteProperty, searchPropertiesController, updateProperty, uploadPropertyImages, deletePropertyImage } from "../controllers/propController.js";
-import { UserRole } from "../common/constants/roles.js";
+import { AdminRole, UserRole } from "../common/constants/roles.js";
 import { upload } from "../middlewares/upload.js";
 
 const propRouter = Router();
@@ -31,7 +31,7 @@ propRouter.post(
     "/",
     writeRateLimiter,                                       // Limits write requests (Redis)
     authMiddleware,                                         // Authenticate request by verifying JWT access token
-    restrictTo(UserRole.ADMIN, UserRole.AGENT),             // Ensures only authorized personals can create listings
+    restrictTo(AdminRole.ADMIN, UserRole.AGENT),             // Ensures only authorized personals can create listings
     validate(createPropertySchema),                         // Validates body payload (Zod)
     addProperty                                            // Handles property creation
 )
@@ -47,7 +47,7 @@ propRouter.delete(
     "/:id",
     writeRateLimiter,
     authMiddleware,
-    restrictTo(UserRole.AGENT, UserRole.ADMIN),
+    restrictTo(UserRole.AGENT, AdminRole.ADMIN),
     deleteProperty
 )
 
@@ -60,7 +60,7 @@ propRouter.patch(
   "/:id",
   writeRateLimiter,
   authMiddleware,
-  restrictTo(UserRole.AGENT, UserRole.ADMIN),
+  restrictTo(UserRole.AGENT, AdminRole.ADMIN),
   validate(updatePropertySchema),
   updateProperty
 );
@@ -74,7 +74,7 @@ propRouter.post(
     "/:id/images",
     writeRateLimiter,
     authMiddleware,
-    restrictTo(UserRole.ADMIN, UserRole.AGENT),
+    restrictTo(AdminRole.ADMIN, UserRole.AGENT),
     upload.array("images", 10),
     uploadPropertyImages
 )
@@ -88,7 +88,7 @@ propRouter.delete(
     "/:id/images",
     writeRateLimiter,
     authMiddleware,
-    restrictTo(UserRole.ADMIN, UserRole.AGENT),
+    restrictTo(AdminRole.ADMIN, UserRole.AGENT),
     validate(deleteImageSchema),
     deletePropertyImage
 )

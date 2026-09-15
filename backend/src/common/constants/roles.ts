@@ -1,6 +1,12 @@
 export enum UserRole {
-  ADMIN = 'admin',
   AGENT = 'agent',
   BUYER = 'buyer',
-  SELLER = 'seller',
 }
+
+export enum AdminRole {
+  ADMIN = "admin",
+  SUPER_ADMIN = "super_admin",
+  MODERATOR = "moderator"
+}
+
+export type Role = UserRole | AdminRole;
