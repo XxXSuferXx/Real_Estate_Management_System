@@ -102,7 +102,9 @@ export const updateProperty = async (req: Request, res: Response) => {
   Object.assign(property, req.validated!.body);
   await property.save();
 
-  const touchedJapanese = "title" in req.validated!.body || "description" in req.validated!.body;
+  const body = req.validated!.body as Record<string, unknown>;
+  
+  const touchedJapanese = "title" in body || "description" in body;
   const humanTranslation = property.translationStatus.title === "human" &&
                            property.translationStatus.description === "human";
 

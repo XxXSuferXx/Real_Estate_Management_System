@@ -2,10 +2,10 @@ import { Router } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { restrictTo } from "../middlewares/rbacMiddleware.js";
 import { AdminRole, UserRole } from "../common/constants/roles.js";
-import { User } from "../Modals/userSchema.js";
 import { validate } from "../middlewares/validate.js";
 import { getAllUsersSchema } from "../validations/authValidation.js";
-import { getAllUsers } from "../controllers/adminController.js";
+import { deleteUser, getAdminStats, getAllPropertiesAdmin, getAllUsers, updateUserRole } from "../controllers/adminController.js";
+import { deleteUserSchema, getAllPropertiesAdminSchema, updateUserRoleSchema } from "../validations/adminValidation.js";
 
 
 const adminRouter = Router();
@@ -20,21 +20,28 @@ adminRouter.get(
     getAllUsers
 );
 
-/*adminRouter.patch(
+adminRouter.patch(
     "/admin/users/:userId/role",
-    validate(User),
-    updateUserRole
+     validate(updateUserRoleSchema), 
+     updateUserRole
 );
 
-
-adminRouter.get(
-    '/admin/stats',
-    getAdminStats
-);
 
 adminRouter.delete(
     "/admin/users/:userId",
+     validate(deleteUserSchema),
     deleteUser
-);*/
+);
+
+adminRouter.get(
+    "/admin/properties",
+     validate(getAllPropertiesAdminSchema),
+    getAllPropertiesAdmin
+);
+
+adminRouter.get(
+    "/admin/stats",
+     getAdminStats
+);
 
 export default adminRouter;

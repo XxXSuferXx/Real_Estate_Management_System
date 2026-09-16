@@ -1,5 +1,5 @@
-import type { Locale } from "../common/constants/locale.ts";
-import { Role } from "../common/constants/roles.ts";
+import type { Locale } from "../common/constants/locale.js";
+import type { Role } from "../common/constants/roles.js";
 
 declare global {
     namespace Express {
@@ -8,7 +8,7 @@ declare global {
                 id: string;
                 role: Role;
             };
-            validated?: { body?: unknow; query?: unknown; params?: unknown };
+            validated?: { body?: unknown; query?: unknown; params?: unknown };
             locale: Locale;
         }
     }

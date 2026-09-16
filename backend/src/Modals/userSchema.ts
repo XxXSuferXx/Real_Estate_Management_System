@@ -8,6 +8,8 @@ export interface IUser extends Document {
     role: Role;
     createdAt: Date;
     updatedAt: Date;
+    isDeleted: boolean;
+    deletedAt: Date | null;
 }
 
 const allRoles = [...Object.values(UserRole), ...Object.values(AdminRole)];
@@ -45,6 +47,8 @@ const userSchema = new Schema<IUser> (
             },
             default: UserRole.BUYER,
         },
+        isDeleted: { type: Boolean, default: false },
+        deletedAt: { type: Date, default: null },
     },
     {
         timestamps: true, // Automatically manages createdAt and updatedAt
