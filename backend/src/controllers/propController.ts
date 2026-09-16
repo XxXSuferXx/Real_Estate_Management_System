@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { AppError } from "../common/errors/appError.js";
 import { Property } from "../Modals/propertySchema.js";
-import { UserRole } from "../common/constants/roles.js";
+import { AdminRole } from "../common/constants/roles.js";
 import { translationQueue } from "../jobs/translationQueue.js";
 import { deleteImageFromCloudinary, uploadToCloudinary } from "../common/utils/uploadImage.js";
 import type { DeleteImageInput } from "../validations/propertyValidaion.js";
@@ -51,7 +51,7 @@ export const deleteProperty = async (req: Request, res: Response) => {
   }
 
   const isOwner = property.agent.equals(req.user.id);
-  const isAdmin = req.user.role === UserRole.ADMIN; 
+  const isAdmin = req.user.role === AdminRole.ADMIN; 
 
   if (!isOwner && !isAdmin) {
     throw new AppError("You can only delete your own listings", 403);
@@ -77,7 +77,7 @@ export const getPropertyById = async (req: Request, res: Response) => {
  
   res.status(200).json({
     success: true,
-    data: property,
+    data: property
   });
 };
 
@@ -93,7 +93,7 @@ export const updateProperty = async (req: Request, res: Response) => {
   }
 
   const isOwner = property.agent.equals(req.user.id);
-  const isAdmin = req.user.role === UserRole.ADMIN;
+  const isAdmin = req.user.role === AdminRole.ADMIN;
 
   if(!isOwner && !isAdmin) {
     throw new AppError("You can only edit your own listing",403);
@@ -129,7 +129,7 @@ export const uploadPropertyImages = async (req: Request, res: Response) => {
   }
 
   const isOwner = property.agent.equals(req.user.id);
-  const isAdmin = req.user.role === UserRole.ADMIN;
+  const isAdmin = req.user.role === AdminRole.ADMIN;
 
   if(!isOwner && !isAdmin) {
     throw new AppError("You can only upload Images to your own listing",403);
@@ -169,9 +169,9 @@ export const deletePropertyImage = async(req: Request, res: Response) => {
   }
 
   const isOwner = property.agent.equals(req.user.id);
-  const isAdmin = req.user.role === UserRole.ADMIN;
+  const isAdmin = req.user.role === AdminRole.ADMIN;
 
-  if(!isAdmin || !isOwner) {
+  if(!isOwner && !isAdmin) {
     throw new AppError("You can only delete images from from your own listing", 403);
   }
 

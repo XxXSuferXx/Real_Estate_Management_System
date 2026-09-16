@@ -1,14 +1,16 @@
 import { Schema, model, Document } from "mongoose";
-import { UserRole } from "../common/constants/roles.js";
+import { UserRole, AdminRole, type Role } from "../common/constants/roles.js";
 
 export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
-    role: UserRole;
+    role: Role;
     createdAt: Date;
     updatedAt: Date;
 }
+
+const allRoles = [...Object.values(UserRole), ...Object.values(AdminRole)];
 
 const userSchema = new Schema<IUser> (
     {
@@ -38,7 +40,7 @@ const userSchema = new Schema<IUser> (
         role: {
             type: String,
             enum: {
-                values: Object.values(UserRole),
+                values: allRoles,
                 message: `{VALUE} is not a valid userRole`
             },
             default: UserRole.BUYER,

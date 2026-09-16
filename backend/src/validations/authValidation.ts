@@ -7,7 +7,7 @@ import { UserRole } from '../common/constants/roles.js';
 // ==========================================
 export const registerSchema = z.object({
   body: z
-    .object({
+    .object({   
       username: z.string().min(3, 'Name must be at least 3 characters').max(30),
       email: z.string().trim().lowercase().email('Invalid email address'),
       password: z

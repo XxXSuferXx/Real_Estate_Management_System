@@ -1,7 +1,7 @@
 import "dotenv/config"
 import { User } from "../Modals/userSchema.js";
 import bcrypt from "bcryptjs";
-import { UserRole } from "../common/constants/roles.js";
+import { AdminRole } from "../common/constants/roles.js";
 import { connectDB } from "../config/db.js";
 
 export const seedAdmin = async() => {
@@ -9,8 +9,8 @@ export const seedAdmin = async() => {
     const password = process.env.ADMIN_PASSWORD;
     const username = process.env.ADMIN_USERNAME as string;
 
-    if(!email || !password) {
-        console.log("admin email or password not found");
+    if(!email || !password || !username) {
+        console.log("admin username or email or password not found");
         return;
     }
 
@@ -27,7 +27,7 @@ export const seedAdmin = async() => {
         username,
         email,
         password: hashedPassword,
-        role: UserRole.ADMIN
+        role: AdminRole.ADMIN
     })
 
     console.log(`Admin account created: ${email}`);
