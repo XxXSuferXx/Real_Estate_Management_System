@@ -56,7 +56,7 @@ export interface IProperty extends Document {
   };
   views: number;
   createdAt: Date;
-  archived: { type: Boolean, default: false, index: true },
+  archived: boolean,
 }
 
 const propertySchema = new Schema<IProperty>(
