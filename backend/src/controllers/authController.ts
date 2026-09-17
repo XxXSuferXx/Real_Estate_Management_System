@@ -87,10 +87,6 @@ export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => 
     throw new AppError("Invalid email or password", 401);
   }
 
-  if(user.isDeleted) {
-    throw new AppError("This account has been deactivated. Please contact support.", 403);
-  }
-
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new AppError("Invalid email or password", 401);

@@ -5,6 +5,7 @@ import { AdminRole, UserRole } from '../common/constants/roles.js';
 import { AppError } from '../common/errors/appError.js';
 import { Property } from '../Modals/propertySchema.js';
 import { RefreshToken } from '../Modals/refreshTokenSchema.js';
+import { deleteImageFromCloudinary } from '../common/utils/uploadImage.js';
 
 export const getAllUsers = async (
   req: Request,
@@ -15,7 +16,7 @@ export const getAllUsers = async (
   const limit = req.query.limit ? Number(req.query.limit) : 20;
   const skip = (page - 1) * limit;
 
-  const filter: QueryFilter<IUser> = { isDeleted: { $ne: true }};
+  const filter: QueryFilter<IUser> = {};
 
   if (req.query.role) {
     filter.role = req.query.role as UserRole;
@@ -76,32 +77,37 @@ export const deleteUser = async (req: Request, res: Response) => {
 
   const user = await User.findById(userId);
   if (!user) throw new AppError("User not found", 404);
-  if (user.isDeleted) throw new AppError("User is already deleted", 400);
 
-  // Soft-delete: keeps the document so populate('agent') on their old listings
-  // still resolves a name. Login must reject isDeleted users (pending: authController/authMiddleware).
-  user.isDeleted = true;
-  user.deletedAt = new Date();
-  await user.save();
+  const properties = await Property.find({ agent: user._id }).select("images");
+  const publicIds = properties.flatMap((p) => p.images.map((img) => img.publicId));
+
+  const results = await Promise.allSettled(
+    publicIds.map((id) => deleteImageFromCloudinary(id))
+  );
+
+  results.forEach((r, i) => {
+    if (r.status === "rejected") {
+      console.error(`Failed to delete Cloudinary image ${publicIds[i]}:`, r.reason);
+    }
+  })
+
+  await Property.deleteMany({ agent: user._id });
 
   await RefreshToken.deleteMany({ user: user._id });
 
-  const result = await Property.updateMany(
-    { agent: user._id },
-    { $set: { archived: true } }
-  );
+  await user.deleteOne();
 
   res.status(200).json({
     success: true,
-    message: "User deleted and their listings archived",
-    data: { userId: user.id, archivedPropertiesCount: result.modifiedCount },
+    message: "User deleted and their listings deleted successfully",
+    data: { userId, deletedPropertiesCount: properties.length },
   });
 };
 
 export const getAllPropertiesAdmin = async (req: Request, res: Response) => {
   const q = req.validated!.query as {
     page?: number; limit?: number; status?: string; type?: string;
-    listingType?: string; agent?: string; archived?: 'true' | 'false' | 'all'; search?: string;
+    listingType?: string; agent?: string; search?: string;
   };
 
   const page = q.page ?? 1;
@@ -113,10 +119,6 @@ export const getAllPropertiesAdmin = async (req: Request, res: Response) => {
   if (q.type) filter.type = q.type;
   if (q.listingType) filter.listingType = q.listingType;
   if (q.agent) filter.agent = q.agent;
-  // Default: no filter on `archived` at all → admin sees everything, including
-  // deleted agents' archived listings, unless they explicitly narrow it.
-  if (q.archived === 'true') filter.archived = true;
-  else if (q.archived === 'false') filter.archived = false;
 
   if (q.search) {
     const escaped = q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -128,7 +130,7 @@ export const getAllPropertiesAdmin = async (req: Request, res: Response) => {
 
   const [properties, total] = await Promise.all([
     Property.find(filter)
-      .populate('agent', 'username email isDeleted')
+      .populate('agent', 'username email')
       .sort('-createdAt')
       .skip(skip)
       .limit(limit),
@@ -144,19 +146,16 @@ export const getAllPropertiesAdmin = async (req: Request, res: Response) => {
 };
 
 export const getAdminStats = async (_req: Request, res: Response) => {
-  const [totalUsers, usersByRole, totalProperties, propertiesByStatus, archivedCount] =
+  const [totalUsers, usersByRole, totalProperties, propertiesByStatus] =
     await Promise.all([
-      User.countDocuments({ isDeleted: false }),
+      User.countDocuments(),
       User.aggregate([
-        { $match: { isDeleted: false } },
         { $group: { _id: '$role', count: { $sum: 1 } } },
       ]),
-      Property.countDocuments({ archived: false }),
+      Property.countDocuments(),
       Property.aggregate([
-        { $match: { archived: false } },
         { $group: { _id: '$status', count: { $sum: 1 } } },
       ]),
-      Property.countDocuments({ archived: true }),
     ]);
 
   res.status(200).json({
@@ -166,7 +165,6 @@ export const getAdminStats = async (_req: Request, res: Response) => {
       usersByRole: Object.fromEntries(usersByRole.map((r) => [r._id, r.count])),
       totalProperties,
       propertiesByStatus: Object.fromEntries(propertiesByStatus.map((r) => [r._id, r.count])),
-      archivedProperties: archivedCount,
     },
   });
 };

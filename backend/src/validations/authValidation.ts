@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { checkPasswordStrength } from '../common/utils/passwordStrength.js';
 import { UserRole } from '../common/constants/roles.js';
 
 // ==========================================
@@ -75,7 +74,8 @@ export const resetPasswordSchema = z.object({
         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
         .regex(/[0-9]/, 'Password must contain at least one number'),
     })
-    .check((ctx) => {
+    /**
+     * .check((ctx) => {
       const { isStrongEnough, score, warning, suggestions } = checkPasswordStrength(
         ctx.value.newPassword
       );
@@ -93,6 +93,7 @@ export const resetPasswordSchema = z.object({
         });
       }
     }),
+     */
 });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>['body'];
@@ -121,7 +122,9 @@ export const changePasswordSchema = z.object({
         .regex(/[0-9]/, 'Password must contain at least one number'),
 
     })
-    .check((ctx) => {
+
+    /**
+     * .check((ctx) => {
       const { isStrongEnough, score, warning, suggestions } = checkPasswordStrength(
         ctx.value.newPassword
       );
@@ -139,6 +142,7 @@ export const changePasswordSchema = z.object({
         });
       }
     })
+     */
 })
 
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>["body"];

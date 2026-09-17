@@ -56,7 +56,6 @@ export interface IProperty extends Document {
   };
   views: number;
   createdAt: Date;
-  archived: boolean,
 }
 
 const propertySchema = new Schema<IProperty>(
@@ -121,7 +120,6 @@ const propertySchema = new Schema<IProperty>(
       description: { type: String, enum: ['human', 'machine', 'missing'], default: 'missing' },
     },
     views: { type: Number, default: 0 },
-    archived: { type: Boolean, default: false, index: true },
   },
   { timestamps: true }
 );
