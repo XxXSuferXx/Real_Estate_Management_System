@@ -10,7 +10,7 @@ export interface IProperty extends Document {
     en?: string
   };
   price: number;
-  type: 'apartment' | 'house' | 'villa' | 'plot' | 'commercial' | 'mansion';
+  type: 'newApartment'| 'oldApartment' | 'newMansion' | 'oldMansion' | 'rental';
   listingType: 'sale' | 'rent';
   status: 'available' | 'pending' | 'sold' | 'rented';
 
@@ -72,7 +72,7 @@ const propertySchema = new Schema<IProperty>(
     price: { type: Number, required: true },
     type: {
       type: String,
-      enum: ['apartment', 'house', 'villa', 'plot', 'commercial', 'mansion'],
+      enum: ['newApartment', 'oldApartment', 'newMansion', 'oldMansion', 'rental'],
       required: true
     },
     listingType: { type: String, enum: ['sale', 'rent'], required: true },

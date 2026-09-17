@@ -1,16 +1,61 @@
 import type { Request, Response } from "express";
 import { AppError } from "../common/errors/appError.js";
-import { Property } from "../Modals/propertySchema.js";
+import { Property, type IProperty } from "../Modals/propertySchema.js";
 import { AdminRole } from "../common/constants/roles.js";
 import { translationQueue } from "../jobs/translationQueue.js";
 import { deleteImageFromCloudinary, uploadToCloudinary } from "../common/utils/uploadImage.js";
 import type { DeleteImageInput } from "../validations/propertyValidaion.js";
+import type { SearchPropertyInput } from "../validations/propertyValidaion.js";
+import type { QueryFilter } from "mongoose";
 
 export const searchPropertiesController = async (req: Request, res: Response) => {
-  return res.status(200).json({
+  const q = req.validated!.query as SearchPropertyInput;
+
+  const filter: QueryFilter<IProperty> = { status: 'available' };
+
+  if (q.type) filter.type = q.type;
+  if (q.listingType) filter.listingType = q.listingType;
+  if (q.prefectureCode) filter.prefectureCode = q.prefectureCode;
+  if (q.cityCode) filter.cityCode = q.cityCode;
+
+  if (q.minPrice !== undefined || q.maxPrice !== undefined) {
+    const priceFilter: { $gte?: number; $lte?: number } = {};
+    if (q.minPrice !== undefined) priceFilter.$gte = q.minPrice;
+    if (q.maxPrice !== undefined) priceFilter.$lte = q.maxPrice;
+    filter.price = priceFilter;
+  }
+
+  if (q.minPrice !== undefined || q.maxPrice !== undefined) {
+    const priceFilter: { $gte?: number; $lte?: number } = {};
+    if (q.minPrice !== undefined) priceFilter.$gte = q.minPrice;
+    if (q.maxPrice !== undefined) priceFilter.$lte = q.maxPrice;
+    filter.price = priceFilter;
+  }
+
+  const sortMap: Record<SearchPropertyInput['sort'], Record<string, 1 | -1>> = {
+    price_asc: { price: 1 },
+    price_desc: { price: -1 },
+    newest: { createdAt: -1 },
+  };
+  const sortOption = sortMap[q.sort];
+
+  const { page, limit } = q;
+  const skip = (page - 1) * limit;
+
+  const [properties, total] = await Promise.all([
+    Property.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit)
+      .populate('agent', 'username email'),
+    Property.countDocuments(filter),
+  ]);
+
+  res.status(200).json({
     success: true,
-    message: "Search route hit successfully!",
-    query: req.query,
+    results: properties.length,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    data: { properties },
   });
 };
 
@@ -103,7 +148,7 @@ export const updateProperty = async (req: Request, res: Response) => {
   await property.save();
 
   const body = req.validated!.body as Record<string, unknown>;
-  
+
   const touchedJapanese = "title" in body || "description" in body;
   const humanTranslation = property.translationStatus.title === "human" &&
                            property.translationStatus.description === "human";

@@ -11,9 +11,9 @@ export const createPropertySchema = z.object({
       en: z.string().optional(),
     }),
     price: z.number().positive('Price must be a positive number'),
-    type: z.enum(['apartment', 'house', 'villa', 'plot', 'commercial', 'mansion']),
+    type: z.enum(['newApartment', 'oldApartment', 'newMansion', 'oldMansion', 'rental']),
     listingType: z.enum(['sale', 'rent']),
-    status: z.enum(['available', 'pending', 'sold', 'rented']),
+    status: z.enum(['available', 'pending', 'sold', 'rented']).default("available"),
 
     layout: z.string().optional(),
     bedrooms: z.number().int().nonnegative().optional(),
@@ -78,8 +78,9 @@ export const searchPropertySchema = z.object({
     cityCode: z.string().optional(),
     minPrice: z.coerce.number().nonnegative().optional(),
     maxPrice: z.coerce.number().positive().optional(),
-    type: z.enum(['apartment', 'house', 'villa', 'plot', 'commercial']).optional(),
+    type: z.enum(['newApartment', 'oldApartment', 'newMansion', 'oldMansion', 'rental']).optional(),
     listingType: z.enum(['sale', 'rent']).optional(),
+    sort: z.enum(['price_asc', 'price_desc', 'newest']).default('newest'),
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(50).default(20),
   })
