@@ -66,16 +66,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
   res.status(201).json({
     success: true,
     message: "User registered successfully!",
-    data: {
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-        createdAt: newUser.createdAt,
-      },
-      accessToken,
-    },
+    accessToken,
   });
 };
 
@@ -117,15 +108,7 @@ export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => 
   res.status(200).json({
     success: true,
     message: "Logged in successfully!",
-    data: {
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-      accessToken,
-    },
+    accessToken,
   });
 };
 
