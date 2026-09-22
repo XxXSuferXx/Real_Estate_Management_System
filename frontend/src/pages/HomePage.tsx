@@ -13,7 +13,7 @@ export const HomePage = ()=> {
          <div className = " bg-slate-800 min-h-screen text-slate-100">
             <div className = " flex flex-wrap justify-end px-5 py-2 border border-blue-50">
         
-                <Button label = "SignIn" onClick = {handleSignInClick}/>
+                <Button label = "Login" onClick = {handleSignInClick}/>
 
             </div>
         </div>

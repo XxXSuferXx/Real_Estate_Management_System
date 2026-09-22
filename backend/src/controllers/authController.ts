@@ -109,6 +109,13 @@ export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => 
     success: true,
     message: "Logged in successfully!",
     accessToken,
+    expiresIn: 900,
+    user: {
+      id: user._id,
+      name: user.username,
+      email: user.email,
+      role: user.role
+    }
   });
 };
 

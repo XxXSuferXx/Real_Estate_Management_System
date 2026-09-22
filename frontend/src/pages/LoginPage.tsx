@@ -1,37 +1,52 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import type { LoginRequest, LoginResponse } from "../types/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import axios from "axios";
 import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useForm } from "react-hook-form";
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Enter a valid email"),
+  password: z.string().min(1, "Password is required").min(6, "At least 6 characters"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+   const [serverError, setServerError] = useState<string>("");
 
-  const [form, setForm] = useState<LoginRequest>({ email: "", password: "" });
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+   const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
+  const onSubmit = async (data: LoginFormValues) => {
+    setServerError("");
+    try {
+      const res = await api.post<LoginResponse>("/api/v1/auth/login", data);
+      const { accessToken, user } = res.data;
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value}));
-  }
-
-  const handleSubmit = async (formData: FormData) => {
-    const email = formData.get("email");
-    const password = formData.get("password");
-    console.log({email, password});
-
-    try{
-    const res = api.post<LoginResponse>("/api/v1/auth/login", form);
+      login(accessToken, user);
+      navigate(
+        user.role === "admin" ? "/admin" : user.role === "agent" ? "/dashboard" : "/"
+      );
     } catch (err) {
-      if(axios.isAxiosError<{message?: string}> (err)) {
-        setError(err.response?.data?.message ?? "Login Failed. Try again.");
+      if (axios.isAxiosError<{ message?: string }>(err)) {
+        setServerError(err.response?.data?.message ?? "Login Failed. Try again.");
       } else {
-        setError("Something went wrong. Try Again.")
+        setServerError("Something went wrong. Try Again.");
       }
-    } finally {
-      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className = " bg-slate-800 min-h-dvh text-white flex flex-col">
@@ -40,22 +55,24 @@ export const LoginPage = () => {
       </div>
       <main className=" flex-1 flex items-center justify-center p-4">
         {/* The green box */}
-        <form action = {handleSubmit} className=" bg-green-600 w-full max-w-sm rounded-lg p-6 flex flex-col gap-4 shadow-lg">
+        <form onSubmit = {handleSubmit(onSubmit)} className=" bg-green-600 w-full max-w-sm rounded-lg p-6 flex flex-col gap-4 shadow-lg">
           <h1 className = " text-2xl font-semibold text-center">Login</h1>
           <div className = " flex flex-col gap-1">
             <label htmlFor = "email" className = "text-sm font-medium">
               Email
             </label>
             <input
+            id = "email"
             type = "email"
-            name = "email"
-            value = {form.email}
-            onChange = { handleChange }
             placeholder = "you@gmail.com"
             required
             autoComplete = "email"
+            {...register("email")}
             className = " w-full rounded-md px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-slate-800 text-black"
              />
+             {errors.email && (
+              <p className="text-xs text-red-200">{errors.email.message}</p>
+            )}
           </div>
 
           <div className=" flex flex-col gap-1">
@@ -63,22 +80,30 @@ export const LoginPage = () => {
               Password
             </label>
             <input
-              type= "password"
-              name = "password"
-              value={form.password}
-              onChange={handleChange}
+              id= "password"
+              type = "password"
               placeholder="••••••••"
               required
               autoComplete="current-password"
+              {...register("password")}
               className=" text-black w-full rounded-md px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-slate-800"
             />
+            {errors.password && (
+              <p className="text-xs text-red-200">{errors.password.message}</p>
+            )}
           </div>
 
+          {serverError && (
+            <p role="alert" className="text-sm text-red-200 bg-red-900/40 rounded-md px-3 py-2">
+              {serverError}
+            </p>
+          )}
+
         <button 
-          type= "submit" disabled = {loading}
+          type= "submit" disabled = {isSubmitting}
           className = " w-full rounded-md bg-slate-800 text-white py-2 font-medium hover:bg-slate-700 transition-colors"
           >
-          {loading? "Signing in..." : "Sign In"}
+          {isSubmitting? "Signing in..." : "Sign In"}
         </button>
 
         </form>
