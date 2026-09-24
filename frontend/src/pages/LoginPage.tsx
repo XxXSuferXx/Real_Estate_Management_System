@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
 import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../context/AuthContext";
 import { useForm } from "react-hook-form";
 
@@ -36,9 +36,8 @@ export const LoginPage = () => {
       const { accessToken, user } = res.data;
 
       login(accessToken, user);
-      navigate(
-        user.role === "admin" ? "/admin" : user.role === "agent" ? "/dashboard" : "/"
-      );
+     navigate({ to: user.role === "admin" ? "/AdminPanel" : user.role === "agent" ? "/Dashboard" : "/" });
+     
     } catch (err) {
       if (axios.isAxiosError<{ message?: string }>(err)) {
         setServerError(err.response?.data?.message ?? "Login Failed. Try again.");

@@ -6,9 +6,10 @@ export interface LoginRequest {
 
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  role: "user" | "agent" | "admin"
+  username: string;
+  password: string;
+  role: string;
+  permissions: string[];
 }
 
 export interface LoginResponse {
