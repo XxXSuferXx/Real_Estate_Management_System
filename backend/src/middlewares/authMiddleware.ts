@@ -8,8 +8,8 @@ interface AccessTokenPayload extends jwt.JwtPayload {
   role: UserRole;
 }
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  
     const authHeader = req.headers['authorization'];
 
     if (!authHeader) {
@@ -30,21 +30,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     req.user = { id: decoded.id, role: decoded.role };
 
-    return next();
-  } catch (error){
-
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    // Access token expired
-    if (error instanceof jwt.TokenExpiredError) {
-      return next(new AppError('Unauthorized: Access token expired', 401));
-    }
-
-    // Invalid token
-    if (error instanceof jwt.JsonWebTokenError) {
-      return next(new AppError('Unauthorized: Invalid or tampered token', 401));
-    }
-    return next(error);
-  }
+    next();
+  
 };
