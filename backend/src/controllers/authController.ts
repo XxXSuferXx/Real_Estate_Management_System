@@ -5,7 +5,7 @@ import { RefreshToken } from "../Modals/refreshTokenSchema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppError } from "../common/errors/appError.js";
-import { UserRole } from "../common/constants/roles.js";
+import { Role } from "../common/constants/roles.js";
 import type { ChangePasswordInput, ForgotPasswordInput, LoginInput, RegisterInput, ResetPasswordInput } from "../validations/authValidation.js";
 import { redisClient } from "../config/redis.js";
 import { Resend } from "resend";
@@ -16,7 +16,7 @@ const RESET_PASSWORD_TTL_SECONDS = 15 * 60
 
 export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
   
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
   const t0 = performance.now();
   const existingUser = await User.findOne({ email });
   const t1 = performance.now();
@@ -31,7 +31,7 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
     username,
     email,
     password: hashedPassword,
-    role: role && Object.values(UserRole).includes(role) ? role : UserRole.BUYER,
+    role: Role.BUYER
   });
 
   const t3 = performance.now();

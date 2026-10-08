@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { UserRole, AdminRole } from "../common/constants/roles.js";
+import { Role } from "../common/constants/roles.js";
 
 const objectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
 
-const settableRoles = [UserRole.BUYER, UserRole.AGENT, AdminRole.ADMIN] as const;
+const settableRoles = [Role.BUYER, Role.AGENT, Role.ADMIN] as const;
+
 
 export const updateUserRoleSchema = z.object({
   params: z.object({ userId: objectIdSchema }),

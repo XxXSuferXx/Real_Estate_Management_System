@@ -1,5 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-import { UserRole, AdminRole, type Role } from "../common/constants/roles.js";
+import { Role } from "../common/constants/roles.js";
 
 export interface IUser extends Document {
     username: string;
@@ -10,15 +10,13 @@ export interface IUser extends Document {
     updatedAt: Date;
 }
 
-const allRoles = [...Object.values(UserRole), ...Object.values(AdminRole)];
-
 const userSchema = new Schema<IUser> (
     {
         username: {
             type: String,
             required: [true, 'Username is required'],
             trim: true,
-            minLength: [3, 'Username must be atleast 3 characters'],
+            minLength: [3, 'Username must be at least 3 characters'],
             maxLength: [30, 'Username cannot exceed 30 characters']
         },
         email:{
@@ -27,10 +25,7 @@ const userSchema = new Schema<IUser> (
             unique: true,
             lowercase: true,
             trim: true,
-            match: [
-                /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                'Please enter a valid email address',
-            ],
+            match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address"],
         },      
         password: {
             type: String,
@@ -40,10 +35,10 @@ const userSchema = new Schema<IUser> (
         role: {
             type: String,
             enum: {
-                values: allRoles,
-                message: `{VALUE} is not a valid userRole`
+                values: Object.values(Role),
+                message: `{VALUE} is not a valid user Role`
             },
-            default: UserRole.BUYER,
+            default: Role.BUYER,
         }
     },
     {

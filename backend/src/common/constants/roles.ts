@@ -1,12 +1,7 @@
-export enum UserRole {
-  AGENT = 'agent',
-  BUYER = 'buyer',
-}
+export const Role = {
+  AGENT: 'agent',
+  BUYER: 'buyer',
+  ADMIN: 'admin',
+} as const;
 
-export enum AdminRole {
-  ADMIN = "admin",
-  SUPER_ADMIN = "super_admin",
-  MODERATOR = "moderator"
-}
-
-export type Role = UserRole | AdminRole;
+export type Role = (typeof Role)[keyof typeof Role];

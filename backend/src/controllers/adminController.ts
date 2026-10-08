@@ -1,7 +1,7 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import type { QueryFilter } from "mongoose";
 import { User, type IUser } from '../Modals/userSchema.js';
-import { AdminRole, UserRole } from '../common/constants/roles.js';
+import { Role } from '../common/constants/roles.js';
 import { AppError } from '../common/errors/appError.js';
 import { Property } from '../Modals/propertySchema.js';
 import { RefreshToken } from '../Modals/refreshTokenSchema.js';
@@ -19,7 +19,7 @@ export const getAllUsers = async (
   const filter: QueryFilter<IUser> = {};
 
   if (req.query.role) {
-    filter.role = req.query.role as UserRole;
+    filter.role = req.query.role as Role;
   }
 
   if (req.query.search) {
@@ -49,7 +49,7 @@ function escapeRegex(str: string): string {
 
 export const updateUserRole = async (req: Request, res: Response) => {
   const { userId } = req.validated!.params as { userId: string };
-  const { role } = req.validated!.body as { role: UserRole | AdminRole };
+  const { role } = req.validated!.body as { role: Role };
 
   if (req.user!.id === userId) {
     throw new AppError("You cannot change your own role", 400);

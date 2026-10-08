@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { UserRole } from '../common/constants/roles.js';
 
 // ==========================================
 // 1. REGISTER SCHEMA
@@ -14,7 +13,7 @@ export const registerSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
         .regex(/[0-9]/, 'Password must contain at least one number'),
-      role: z.enum(UserRole).default(UserRole.BUYER),
+      //Stripping Role now even if anyone sends
     })
 
     /*.check((ctx) => {
@@ -166,7 +165,6 @@ export const getAllUsersSchema = z.object({
         .transform(Number)
         .refine((n) => n >= 1 && n <= 100, 'limit must be between 1 and 100')
         .optional(),
-      role: z.enum(UserRole).optional(),
       search: z.string().trim().max(100).optional(),
     })
     .strict(), // reject unknown query params instead of silently ignoring them

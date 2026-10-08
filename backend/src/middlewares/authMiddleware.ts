@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { type UserRole } from '../common/constants/roles.js';
+import { Role } from '../common/constants/roles.js';
 import { AppError } from '../common/errors/appError.js';
 
 interface AccessTokenPayload extends jwt.JwtPayload {
   id: string;
-  role: UserRole;
+  role: Role;
 }
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
