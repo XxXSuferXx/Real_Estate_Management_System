@@ -1,7 +1,7 @@
 import "dotenv/config"
 import { User } from "../Modals/userSchema.js";
 import bcrypt from "bcryptjs";
-import { AdminRole } from "../common/constants/roles.js";
+import { Role } from "../common/constants/roles.js";
 import { connectDB } from "../config/db.js";
 
 export const seedAdmin = async() => {
@@ -27,7 +27,7 @@ export const seedAdmin = async() => {
         username,
         email,
         password: hashedPassword,
-        role: AdminRole.ADMIN
+        role: Role.ADMIN
     })
 
     console.log(`Admin account created: ${email}`);
